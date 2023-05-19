@@ -1,4 +1,4 @@
-import { defineConfig, presetIcons, presetWind, transformerDirectives } from 'unocss';
+import { defineConfig, presetIcons, presetWind, transformerDirectives, transformerVariantGroup } from 'unocss';
 
 export default defineConfig({
   presets: [
@@ -6,7 +6,8 @@ export default defineConfig({
     presetIcons(),
   ],
   transformers: [
-    transformerDirectives()
+    transformerDirectives(),
+    transformerVariantGroup()
   ],
   theme: {
     fontFamily: {

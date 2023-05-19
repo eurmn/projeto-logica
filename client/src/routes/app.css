@@ -17,3 +17,9 @@ body {
 body {
     @apply bg-[#131313] text-zinc-2;
 }
+
+.login-input {
+    @apply text-md w-full p-2.5 py-3 rounded-md border-none outline-transparent outline-solid
+        focus:(outline-indigo-6 outline-2 ) my-1 font-semibold transition-250 font-sans
+        outline-2 outline-zinc-7 text-zinc-9;
+}

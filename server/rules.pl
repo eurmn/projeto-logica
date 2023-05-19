@@ -133,7 +133,7 @@ add_friend(UserId1, UserId2) :-
     assertz(friend(UserId1, UserId2)),
     assertz(friend(UserId2, UserId1)).
 
-user(1,a,2,b).
+user(0, 'John', 0, b).
 
 % Iniciar o servidor na porta 6162
 :- initialization http_server(http_dispatch, [port(6162)]).
