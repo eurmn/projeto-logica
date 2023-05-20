@@ -15,7 +15,7 @@ body {
 }
 
 body {
-    @apply bg-[#131313] text-zinc-2;
+    @apply bg-gradient-to-b from-indigo-9 to-indigo-950 text-zinc-2;
 }
 
 .login-input {

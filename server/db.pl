@@ -7,14 +7,39 @@
 
 % Declara predicados dinâmicos.
 :- dynamic(user/4).
-:- dynamic(room/2).
+:- dynamic(room/3).
 :- dynamic(friend/2).
 :- dynamic(post/5).
+:- dynamic(chat_history/2).
 :- dynamic(session/2).
 
 :- http_handler('/user', handle_user(Method), [method(Method), methods([get,post])]).
 :- http_handler('/session', handle_session(Method), [method(Method), methods([get,post])]).
+:- http_handler('/room', handle_room(Method), [method(Method), methods([get,post])]).
 :- http_handler('/login', handle_login, [methods([post])]).
+
+handle_room(get, Request) :-
+    % Get all rooms an user is in.
+    % Return { roomCode, users: { userId, username, avatarId }[], owner }[].
+    http_parameters(Request, [id(MyUserId, [integer])]),
+    findall(json{ roomCode: RoomCode, users: UserInfos },
+        (
+            room(RoomCode, UserIds, _),
+            member(MyUserId, UserIds),
+            findall(json{ id: UserId, username: Username, avatarId: AvatarId },
+                (
+                    member(UserId, UserIds),
+                    user(UserId, Username, AvatarId, _)
+                ),
+            UserInfos)
+        ),
+    RoomCodes),
+    reply_json_dict(RoomCodes).
+
+handle_room(post, Request) :-
+    http_read_json_dict(Request, Data),
+    assertz(room(Data.roomCode, [Data.owner], Data.owner)),
+    reply_json_dict('Success').
 
 handle_login(Request) :-
     http_read_json_dict(Request, Data),
@@ -25,7 +50,7 @@ handle_login(Request) :-
     ).
 
 handle_session(get, Request) :-
-    http_parameters(Request, [sessionId(SessionId, [integer])]),
+    http_parameters(Request, [sessionId(SessionId, [string])]),
     (
         session(SessionId, UserId)
         -> reply_json_dict(UserId)
@@ -34,6 +59,7 @@ handle_session(get, Request) :-
 
 handle_session(post, Request) :-
     http_read_json_dict(Request, Data),
+    retractall(session(Data.sessionId, _)),
     assertz(session(Data.sessionId, Data.id)),
     reply_json_dict('Success').
 
@@ -43,7 +69,7 @@ handle_user(post, Request) :-
         user(Data.id, _, _, _)
         ->  reply_json_dict('Already Exists', [status(409)])
         ;   assertz(user(Data.id, Data.username, Data.avatarId, Data.password)),
-            reply_json_dict('Success')
+            reply_json_dict('Created', [status(201)])
     ).
 
 handle_user(get, Request) :-
@@ -86,7 +112,7 @@ get_avatar_id(UserId, AvatarId) :-
 
 % Obter os usuários em uma sala.
 get_rooms_users(RoomCode, UserIds) :-
-    room(RoomCode, UserIds).
+    room(RoomCode, UserIds, _).
 
 % Checar senha
 check_password(UserName, PasswordHash, UserId) :-
@@ -106,19 +132,20 @@ get_all_users(UserIds) :-
 create_room(RoomCode) :-
     assertz(room(RoomCode, [])).
 
-% Retorna quais salas um usuário está dentro
-get_users_rooms(UserId, Rooms) :-
-    findall(RoomCode, room(RoomCode, UserIds), Rooms),
+% Retorna informações de todas as salas que o usuário pertence.
+get_users_rooms(UserId, Rooms, UserNames) :-
+    findall(RoomCode, room(RoomCode, UserIds, _), Rooms),
+    findall(UserName, user(UserId, UserName, _, _), UserNames),
     member(UserId, UserIds).
 
 % Adicionar um usuário a uma sala.
 add_user_to_room(UserId, RoomCode) :-
     % Checar se a sala existe, e se não, criar uma nova.
-    (room(RoomCode, _) -> true; create_room(RoomCode)),
-    room(RoomCode, UserIds),
+    (room(RoomCode, _, _) -> true; create_room(RoomCode)),
+    room(RoomCode, UserIds, RoomOwner),
     construct_new_list(UserIds, [UserId], NewUserIds),
-    retractall(room(RoomCode, _)),
-    assertz(room(RoomCode, NewUserIds)).
+    retractall(room(RoomCode, _, _)),
+    assertz(room(RoomCode, NewUserIds, RoomOwner)).
 
 % Checa se UserId1 e UserId2 são amigos.
 is_friend(UserId1, UserId2) :-
@@ -133,7 +160,8 @@ add_friend(UserId1, UserId2) :-
     assertz(friend(UserId1, UserId2)),
     assertz(friend(UserId2, UserId1)).
 
-user(0, 'John', 0, b).
+user(0, "admin", 0, "admin").
+room(0,[0],0).
 
 % Iniciar o servidor na porta 6162
 :- initialization http_server(http_dispatch, [port(6162)]).

@@ -6,5 +6,9 @@ export default defineConfig({
   plugins: [
     sveltekit(),
     unoCSS()
-  ]
+  ],
+  server: {
+    port: 3000,
+    host: '0.0.0.0',
+  }
 });

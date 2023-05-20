@@ -1,29 +1,38 @@
-import { error } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import uid from 'uid-safe';
 
 export const POST = (async ({ request, cookies }) => {
-  const { username, password } = await request.json();
+  const { username, password, avatarId } = await request.json();
 
-  const res = await fetch('http://localhost:6162/login', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ username, password })
-  });
+  let status = 0;
+  let id: number;
+  let res: Response;
 
-  if (!res.ok) throw error(401, 'Unauthorized');
-  console.log(`User ${username} logged in`);
+  do {
+    id = Math.floor(Math.random() * 1000000);
+  
+    res = await fetch('http://localhost:6162/user', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ id, username, password, avatarId })
+    });
 
-  const userId = await res.json();
+    status = res.status;
+  } while (status === 409);
+
+  if (res.status !== 201) throw error(500, 'Internal Server Error');
+
+  console.log(`User ${username} created.`);
 
   let sessionId = cookies.get('sessionid');
 
   if (!sessionId) {
     sessionId = await uid(128);
   }
-
+  
   cookies.set('sessionid', sessionId, {
     path: '/',
   });
@@ -33,7 +42,7 @@ export const POST = (async ({ request, cookies }) => {
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ sessionId, id: userId })
+    body: JSON.stringify({ sessionId, id })
   });
 
   if (sessionRes.ok) {
