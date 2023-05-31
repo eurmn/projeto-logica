@@ -8,19 +8,19 @@
 % Declara predicados dinâmicos.
 :- dynamic(user/4).
 :- dynamic(room/3).
+:- dynamic(session/2).
 :- dynamic(friend/2).
 :- dynamic(post/5).
 :- dynamic(chat_history/2).
-:- dynamic(session/2).
 
 :- http_handler('/user', handle_user(Method), [method(Method), methods([get,post])]).
 :- http_handler('/session', handle_session(Method), [method(Method), methods([get,post])]).
-:- http_handler('/room', handle_room(Method), [method(Method), methods([get,post])]).
+:- http_handler('/room', handle_room(Method), [method(Method), methods([get,post,delete])]).
+:- http_handler('/room/delete', handle_room_delete(Method), [method(Method), methods([post])]).
 :- http_handler('/login', handle_login, [methods([post])]).
 
 handle_room(get, Request) :-
-    % Get all rooms an user is in.
-    % Return { roomCode, users: { userId, username, avatarId }[], owner }[].
+    % http://localhost:6162/room?id=1
     http_parameters(Request, [id(MyUserId, [integer])]),
     findall(json{ roomCode: RoomCode, users: UserInfos },
         (
@@ -33,12 +33,18 @@ handle_room(get, Request) :-
                 ),
             UserInfos)
         ),
-    RoomCodes),
-    reply_json_dict(RoomCodes).
+    RoomInfos),
+    reply_json_dict(RoomInfos).
 
 handle_room(post, Request) :-
     http_read_json_dict(Request, Data),
     assertz(room(Data.roomCode, [Data.owner], Data.owner)),
+    reply_json_dict('Success').
+
+handle_room_delete(post, Request) :-
+    % http://localhost:6162/room/delete
+    http_read_json_dict(Request, Data),
+    retractall(room(Data.roomCode, _, _)),
     reply_json_dict('Success').
 
 handle_login(Request) :-
@@ -64,6 +70,7 @@ handle_session(post, Request) :-
     reply_json_dict('Success').
 
 handle_user(post, Request) :-
+    % POST http://localhost:6162/user
     http_read_json_dict(Request, Data),
     (
         user(Data.id, _, _, _)
@@ -73,6 +80,7 @@ handle_user(post, Request) :-
     ).
 
 handle_user(get, Request) :-
+    % GET http://localhost:6162/user?id=0
     http_parameters(Request, [id(Id, [integer])]),
     (
         user(Id, Username, AvatarId, _)
@@ -160,7 +168,6 @@ add_friend(UserId1, UserId2) :-
     assertz(friend(UserId1, UserId2)),
     assertz(friend(UserId2, UserId1)).
 
-user(0, "admin", 0, "admin").
 room(0,[0],0).
 
 % Iniciar o servidor na porta 6162

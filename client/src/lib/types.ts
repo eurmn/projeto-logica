@@ -6,7 +6,7 @@ export type UserData = {
 
 export type Room = {
     owner: number;
-    roomCode: number;
+    roomCode: string;
     users: {
         id: number,
         username: string

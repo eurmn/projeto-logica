@@ -1,16 +1,19 @@
 import { error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import uid from 'uid-safe';
+import * as argon2 from 'argon2';
 
 export const POST = (async ({ request, cookies }) => {
   const { username, password } = await request.json();
+
+  const passwordHash = await argon2.hash(password, { salt: Buffer.from(import.meta.env.VITE_SALT)});
 
   const res = await fetch('http://localhost:6162/login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ username, password })
+    body: JSON.stringify({ username, password: passwordHash })
   });
 
   if (!res.ok) throw error(401, 'Unauthorized');

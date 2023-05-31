@@ -1,9 +1,12 @@
-import { error, redirect } from '@sveltejs/kit';
-import type { RequestHandler } from './$types';
+import { error } from '@sveltejs/kit';
 import uid from 'uid-safe';
+import type { RequestHandler } from './$types';
+import * as argon2 from 'argon2';
 
 export const POST = (async ({ request, cookies }) => {
   const { username, password, avatarId } = await request.json();
+
+  const passwordHash = await argon2.hash(password, { salt: Buffer.from(import.meta.env.VITE_SALT)});
 
   let status = 0;
   let id: number;
@@ -17,7 +20,7 @@ export const POST = (async ({ request, cookies }) => {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ id, username, password, avatarId })
+      body: JSON.stringify({ id, username, password: passwordHash, avatarId })
     });
 
     status = res.status;

@@ -8,6 +8,7 @@
     let avatarId = 0;
 
     let isSignup = false;
+    let loginFailed = false;
     let params: URLSearchParams;
     
     onMount(() => {
@@ -18,6 +19,8 @@
       if (!username || !password) {
         return;
       }
+
+      loginFailed = false;
       
       let res = await fetch('/api/login', {
         method: 'POST',
@@ -30,7 +33,10 @@
 
       if (res.ok) {
         goto(params.get('redirect') || '/');
+        return;
       }
+
+      loginFailed = true;
     }
 
     async function signup() {
@@ -49,6 +55,12 @@
 
       if (res.ok) {
         goto(params.get('redirect') || '/');
+      }
+    }
+
+    $: {
+      if (isSignup) {
+        loginFailed = false;
       }
     }
 </script>
@@ -84,6 +96,12 @@
                     class="font-semibold bg-zinc-8 border-none outline-none
                 text-white px-5 py-4 rounded-lg placeholder:text-zinc-5"
                 />
+            </div>
+            <div class="{loginFailed ? 'flex': 'display-none'} text-sm text-red-5 gap-2 items-center">
+                <span class="i-heroicons:exclamation-triangle-20-solid text-lg"></span>
+                <span>
+                    Nome de usuário ou senha inválido(s).
+                </span>
             </div>
             {#if isSignup}
                 <div class="flex flex-col gap-4">

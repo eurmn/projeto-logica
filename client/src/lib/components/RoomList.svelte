@@ -1,11 +1,26 @@
 <script lang="ts">
+    import type { Room } from '$lib/types';
     import { Avatars } from '$lib/utils';
     import type { PageData } from '../../routes/home/$types';
+	import { scale } from 'svelte/transition';
 
     export let data: PageData;
+    export let onCreateRoom: (room: string) => void;
+    export let onRoomSelected: (room: Room) => void;
 
     async function createRoom() {
+      let res = await fetch('/api/rooms', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: data.userData.id,
+        }),
+      });
 
+      let newRoomCode = await res.json() as string;
+      onCreateRoom(newRoomCode);
     }
 </script>
 
@@ -14,7 +29,7 @@
 >
     <div
         class="gap-3 inline-flex items-center py-4 px-6 w-full bg-indigo-8
-        rounded-xl my-2 justify-start overflow-hidden"
+        rounded-xl my-2 justify-start overflow-hidden min-h-24"
     >
         <img
             src={Avatars[data.userData.avatarId].src}
@@ -32,8 +47,7 @@
             </div>
         </div>
     </div>
-    <!-- <div class="h-0 w-full border-b-1 border-b-solid border-zinc-5"></div> -->
-    <div class="flex gap-3 flex-col h-full w-full">
+    <div class="flex gap-3 flex-col w-full">
         <div class="mx-4 rounded-xl text-zinc-5 gap-2 flex items-center mb-4">
             <span class="text-3xl i-heroicons-magnifying-glass-solid" />
             <input
@@ -43,6 +57,7 @@
                 focus:outline-none w-full placeholder:text-zinc-5 text-zinc-3"
             />
         </div>
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
             on:click={() => createRoom()}
             class="w-full bg-white/5 p-3 rounded-xl flex gap-3
@@ -60,9 +75,16 @@
                 </div>
             </div>
         </div>
+    </div>
+    <!-- <div class="h-0 w-full border-b-1 border-b-solid border-zinc-5"></div> -->
+    <div class="flex gap-3 flex-col h-full w-full overflow-y-auto">
         {#if data.rooms.length > 0}
-            {#each data.rooms as room}
+            {#each data.rooms as room (room.roomCode)}
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
                 <div
+                    
+                    transition:scale
+                    on:click={() => onRoomSelected(room)}
                     class="w-full bg-white/5 p-3 rounded-xl flex gap-3
                         cursor-pointer hover:brightness-90 transition-250"
                 >
@@ -72,7 +94,9 @@
                         <span class="i-heroicons:user-group-solid text-4xl" />
                     </div>
                     <div class="flex flex-col justify-evenly">
-                        <div class="text-sm">Sala #{room.roomCode}</div>
+                        <div class="text-sm">Sala {
+                            room.roomCode.slice(0, 3) + '-' + room.roomCode.slice(3)
+                        }</div>
                         <div class="text-xs text-zinc-4">
                             {room.users.map(u => u.id === data.userData.id ? 'Você' : u.username).join(', ')}.
                         </div>
