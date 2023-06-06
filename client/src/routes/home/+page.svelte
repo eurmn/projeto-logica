@@ -36,7 +36,7 @@
   }
 </script>
 
-<div class="sm:flex flex-col bg-zinc-9/90 sm:rounded-l-8 overflow-hidden">
+<div class="block sm:flex bg-zinc-9/90 sm:rounded-l-8 overflow-hidden">
     <RoomList
       {data}
       onRoomSelected={(r) => (selectedRoom = r)}
