@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { base } from "$app/paths";
   import Dash from "$lib/components/Dash.svelte";
   import Post from "$lib/components/Post.svelte";
   import RoomList from "$lib/components/RoomList.svelte";
@@ -35,7 +36,7 @@
   }
 </script>
 
-<div class="flex bg-zinc-9/90 rounded-l-8 overflow-hidden">
+<div class="sm:flex flex-col bg-zinc-9/90 sm:rounded-l-8 overflow-hidden">
     <RoomList
       {data}
       onRoomSelected={(r) => (selectedRoom = r)}

@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { base } from "$app/paths";
     import Post from "$lib/components/Post.svelte";
     import { Avatars } from "$lib/utils";
     import type { PageData } from "./$types";
@@ -41,10 +42,10 @@
     }
 </script>
 
-<div class="flex bg-zinc-9/90 rounded-l-8 overflow-y-show overflow-x-hidden p-7">
-    <div class="max-w-3xl h-full w-full mx-auto flex flex-col gap-2">
+<div class="flex bg-zinc-9/90 sm:rounded-l-8 p-2 sm:p-7 w-full">
+    <div class="sm:max-w-3xl h-full w-full mx-auto flex flex-col gap-2">
         <div
-            class="rounded-xl bg-white/5 p-5 gap-5 grid grid-flow-col grid-cols-[auto_1fr]"
+            class="rounded-xl bg-white/5 p-5 sm:gap-5 grid grid-rows-[auto_1fr] sm:grid-cols-[auto_1fr]"
         >
             <div class="flex flex-col gap-1 items-center py-2">
                 <img

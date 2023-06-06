@@ -1,6 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
 import type { UserData } from '$lib/types';
+import { base } from '$app/paths';
 
 export const load = (async ({ cookies }) => {
   const sessionid = cookies.get('sessionid');

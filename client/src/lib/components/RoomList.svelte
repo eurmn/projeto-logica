@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { base } from "$app/paths";
     import type { Room } from "$lib/types";
     import { Avatars } from "$lib/utils";
     import type { PageData } from "../../routes/home/$types";

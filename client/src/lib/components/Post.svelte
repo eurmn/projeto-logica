@@ -10,7 +10,7 @@
     in:scale
     class="rounded-xl bg-white/5 p-5 gap-5 grid grid-flow-col grid-cols-[auto_1fr]"
 >
-    <div class="flex flex-col gap-1 justify-center items-center">
+    <div class="flex flex-col gap-1 items-center">
         <img
             src={Avatars[data.author.avatarId].src}
             alt=""
@@ -22,10 +22,13 @@
             {data.author.username}#{data.author.id}
         </div>
     </div>
-    <div class="flex flex-col gap-1">
+    <div class="flex flex-col gap-1 overflow-x-hidden">
         <h2>{data.title}</h2>
         <hr class="border-none border-b-1 border-b-solid border-zinc-5 my-1" />
-        <div class="text-sm text-zinc-3 p-1">{data.description}</div>
+        <!-- word wrap -->
+        <div class="text-sm text-zinc-3 p-1
+            whitespace-pre-wrap break-words overflow-x-hidden
+        ">{data.description}</div>
         <hr class="border-none border-b-1 border-b-solid border-zinc-5 my-1" />
         <span class="ml-auto text-xs text-zinc-4">
             {new Date(data.date).toLocaleDateString("pt-BR")}

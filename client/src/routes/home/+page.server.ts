@@ -1,6 +1,7 @@
 import type { Room } from '$lib/types';
 import { redirect } from '@sveltejs/kit';
 import type { LayoutData, PageServerLoad } from './$types';
+import { base } from '$app/paths';
 
 export const load = (async ({ parent }) => {
   const data = await parent() as LayoutData;
