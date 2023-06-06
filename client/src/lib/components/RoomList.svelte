@@ -1,26 +1,26 @@
 <script lang="ts">
-    import type { Room } from '$lib/types';
-    import { Avatars } from '$lib/utils';
-    import type { PageData } from '../../routes/home/$types';
-	import { scale } from 'svelte/transition';
+    import type { Room } from "$lib/types";
+    import { Avatars } from "$lib/utils";
+    import type { PageData } from "../../routes/home/$types";
+    import { scale } from "svelte/transition";
 
     export let data: PageData;
     export let onCreateRoom: (room: string) => void;
     export let onRoomSelected: (room: Room) => void;
 
     async function createRoom() {
-      let res = await fetch('/api/rooms', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: data.userData.id,
-        }),
-      });
+        let res = await fetch("/api/rooms", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                userId: data.userData.id,
+            }),
+        });
 
-      let newRoomCode = await res.json() as string;
-      onCreateRoom(newRoomCode);
+        let newRoomCode = (await res.json()) as string;
+        onCreateRoom(newRoomCode);
     }
 </script>
 
@@ -82,8 +82,7 @@
             {#each data.rooms as room (room.roomCode)}
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
                 <div
-                    
-                    transition:scale
+                    in:scale
                     on:click={() => onRoomSelected(room)}
                     class="w-full bg-white/5 p-3 rounded-xl flex gap-3
                         cursor-pointer hover:brightness-90 transition-250"
@@ -94,11 +93,19 @@
                         <span class="i-heroicons:user-group-solid text-4xl" />
                     </div>
                     <div class="flex flex-col justify-evenly">
-                        <div class="text-sm">Sala {
-                            room.roomCode.slice(0, 3) + '-' + room.roomCode.slice(3)
-                        }</div>
+                        <div class="text-sm">
+                            Sala {room.roomCode.slice(0, 3) +
+                                "-" +
+                                room.roomCode.slice(3)}
+                        </div>
                         <div class="text-xs text-zinc-4">
-                            {room.users.map(u => u.id === data.userData.id ? 'Você' : u.username).join(', ')}.
+                            {room.users
+                                .map((u) =>
+                                    u.id === data.userData.id
+                                        ? "Você"
+                                        : u.username
+                                )
+                                .join(", ")}.
                         </div>
                     </div>
                 </div>

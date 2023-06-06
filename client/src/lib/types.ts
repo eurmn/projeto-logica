@@ -12,3 +12,11 @@ export type Room = {
         username: string
     }[];
 }
+
+export type Post = {
+    id: string;
+    title: string;
+    description: string;
+    date: string;
+    author: UserData;
+}

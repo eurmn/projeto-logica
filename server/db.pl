@@ -15,12 +15,32 @@
 
 :- http_handler('/user', handle_user(Method), [method(Method), methods([get,post])]).
 :- http_handler('/session', handle_session(Method), [method(Method), methods([get,post])]).
-:- http_handler('/room', handle_room(Method), [method(Method), methods([get,post,delete])]).
+:- http_handler('/room', handle_room(Method), [method(Method), methods([get,post])]).
 :- http_handler('/room/delete', handle_room_delete(Method), [method(Method), methods([post])]).
+:- http_handler('/post', handle_post(Method), [method(Method), methods([post])]).
+:- http_handler('/all_posts', handle_all_posts, [methods([get])]).
 :- http_handler('/login', handle_login, [methods([post])]).
 
+handle_all_posts(_) :-
+    get_all_posts(Posts),
+    reply_json_dict(Posts).
+
+get_all_posts(Posts) :-
+    findall(json{ id: Id, title: Title, description: Description, date: Date, author: Author },
+        post(Id, Title, Description, Date, Author),
+    Posts).
+
+handle_post(post, Request) :-
+    http_read_json_dict(Request, Data),
+    (
+        post(Data.id, _, _, _, _)
+        ->  edit_post(Data.id, Data.title, Data.description, Data.date, Data.author),
+            reply_json_dict('Success')
+        ;   create_post(Data.id, Data.title, Data.description, Data.date, Data.author),
+            reply_json_dict('Success')
+    ).
+
 handle_room(get, Request) :-
-    % http://localhost:6162/room?id=1
     http_parameters(Request, [id(MyUserId, [integer])]),
     findall(json{ roomCode: RoomCode, users: UserInfos },
         (
@@ -42,7 +62,6 @@ handle_room(post, Request) :-
     reply_json_dict('Success').
 
 handle_room_delete(post, Request) :-
-    % http://localhost:6162/room/delete
     http_read_json_dict(Request, Data),
     retractall(room(Data.roomCode, _, _)),
     reply_json_dict('Success').
@@ -91,10 +110,6 @@ handle_user(get, Request) :-
 % Checar se sessão existe.
 session_exists(SessionId) :-
     session(SessionId, _).
-
-% Obter a lista de todos os posts.
-get_all_posts(Posts) :-
-    findall(post(PostId, Title, Description, Date, Author), post(PostId, Title, Description, Date, Author), Posts).
 
 % Criar um novo post.
 create_post(PostId, Title, Description, Date, Author) :-
